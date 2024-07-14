@@ -11,12 +11,15 @@ export default eventHandler(async (event) => {
   }
 
   // Parse the incoming request body
-  const link = await readValidatedBody(event, LinkSchema.parse)
+  const { oldSlug, ...linkData } = await readValidatedBody(event, LinkSchema.extend({
+    oldSlug: z.string(),
+  }).parse)
+
   const { cloudflare } = event.context
   const { KV } = cloudflare.env
 
-  // Fetch the existing link data using the current slug
-  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.oldSlug}`, { type: 'json' })
+  // Fetch the existing link data using the old slug
+  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${oldSlug}`, { type: 'json' })
   if (!existingLink) {
     throw createError({
       status: 404, // Not Found
@@ -25,10 +28,10 @@ export default eventHandler(async (event) => {
   }
 
   // Determine the updated slug
-  const updatedSlug = link.newSlug ? modifySlug(link.newSlug) : link.oldSlug
+  const updatedSlug = linkData.slug !== oldSlug ? linkData.slug : oldSlug
 
   // Check for slug conflict if the slug is updated
-  if (link.newSlug && link.oldSlug !== updatedSlug) {
+  if (linkData.slug && oldSlug !== updatedSlug) {
     const conflictLink = await KV.get(`link:${updatedSlug}`, { type: 'json' })
     if (conflictLink) {
       throw createError({
@@ -41,7 +44,7 @@ export default eventHandler(async (event) => {
   // Create the new link object with updated data
   const newLink = {
     ...existingLink,
-    ...link,
+    ...linkData,
     slug: updatedSlug, // Update slug
     id: existingLink.id, // Preserve original id
     createdAt: existingLink.createdAt, // Preserve original creation date
@@ -59,16 +62,10 @@ export default eventHandler(async (event) => {
   })
 
   // Delete the old link if the slug has changed
-  if (link.oldSlug !== updatedSlug) {
-    await KV.delete(`link:${link.oldSlug}`)
+  if (oldSlug !== updatedSlug) {
+    await KV.delete(`link:${oldSlug}`)
   }
 
   setResponseStatus(event, 201)
   return { link: newLink }
 })
-
-// Function to modify the slug
-function modifySlug(slug: string): string {
-  // Example logic to modify the slug, this can be customized
-  return slug + '-updated'
-}

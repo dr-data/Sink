@@ -110,7 +110,7 @@ async function onSubmit(formData) {
   try {
     const response = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
       method: isEdit ? 'PUT' : 'POST',
-      body: linkData,
+      body: isEdit ? { oldSlug, ...linkData } : linkData,
     })
     console.log('API response:', response) // Debugging message
 
