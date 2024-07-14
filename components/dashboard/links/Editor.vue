@@ -100,10 +100,11 @@ async function onSubmit(formData) {
   }
   console.log('Link data to send:', linkData) // Debugging message
   try {
-    const { link: newLink } = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
+    const response = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
       method: isEdit ? 'PUT' : 'POST',
       body: linkData,
     })
+    const { link: newLink } = response
     dialogOpen.value = false
     emit('update:link', newLink, isEdit ? 'edit' : 'create')
   
@@ -114,6 +115,9 @@ async function onSubmit(formData) {
     }
   } catch (error) {
     console.error('Error updating/creating link:', error)
+    if (error.response && error.response.data) {
+      console.error('API Error response data:', error.response.data)
+    }
     toast('An error occurred while saving the link')
   }
 }
