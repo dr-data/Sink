@@ -47,7 +47,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    siteToken: '456123',
+    siteToken: '789456123',
     redirectStatusCode: '301',
     homeURL: '',
     cfAccountId: '',
