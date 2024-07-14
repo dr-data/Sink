@@ -53,7 +53,7 @@ async function onSubmit(form) {
           <AlertCircle class="w-4 h-4" />
           <AlertTitle>Tips</AlertTitle>
           <AlertDescription>
-            The site token for preview mode is <code class="font-mono text-green-500">SinkCool</code> .
+            The site token for preview mode is <code class="font-mono text-green-500">SinkCool</code> ..
           </AlertDescription>
         </Alert>
         <Button class="w-full">
