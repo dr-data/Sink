@@ -90,13 +90,15 @@ onMounted(() => {
 })
 
 async function onSubmit(formData) {
+  console.log('Form data:', formData) // Debugging message
   const oldSlug = link.value.slug
   const linkData = {
     url: formData.url,
     slug: formData.slug,
-    ...(formData.optional || []),
+    ...(formData.optional || {}),
     expiration: formData.optional?.expiration ? date2unix(formData.optional?.expiration, 'end') : undefined,
   }
+  console.log('Link data to send:', linkData) // Debugging message
   const { link: newLink } = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
     method: isEdit ? 'PUT' : 'POST',
     body: linkData,
@@ -121,7 +123,7 @@ const { previewMode } = useRuntimeConfig().public
         <Button
           class="ml-2"
           variant="outline"
-          @click="randomSlug"
+          @click="() => { dialogOpen.value = true; randomSlug(); }"
         >
           Create Link
         </Button>
