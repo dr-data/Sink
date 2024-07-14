@@ -78,7 +78,7 @@ async function aiSlug() {
     })
     form.setFieldValue('slug', slug)
   } catch (error) {
-    console.error('Error generating AI slug:', error)
+    console.log('Error generating AI slug:', error)
   }
   aiSlugPending.value = false
 }
@@ -89,6 +89,7 @@ onMounted(() => {
   }
 })
 
+// Watch for changes in the dialog open state to reset form if needed
 watch(dialogOpen, (newVal) => {
   if (!newVal && !isEdit) {
     form.resetForm()
@@ -96,7 +97,7 @@ watch(dialogOpen, (newVal) => {
 })
 
 async function onSubmit(formData) {
-  console.log('Form data:', formData)
+  console.log('Form data:', formData) // Debugging message
   const oldSlug = link.value.slug
   const linkData = {
     url: formData.url,
@@ -104,17 +105,16 @@ async function onSubmit(formData) {
     ...(formData.optional || {}),
     expiration: formData.optional?.expiration ? date2unix(formData.optional?.expiration, 'end') : undefined,
   }
-  console.log('Link data to send:', linkData)
+  console.log('Link data to send:', linkData) // Debugging message
 
   try {
-    const endpoint = isEdit ? '/api/link/edit' : '/api/link/create'
-    console.log(`Sending ${isEdit ? 'PUT' : 'POST'} request to ${endpoint}`)
-    const response = await useAPI(endpoint, {
+    const response = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
       method: isEdit ? 'PUT' : 'POST',
       body: linkData,
     })
-    console.log('API response:', response)
+    console.log('API response:', response) // Debugging message
 
+    // Check if response has the expected structure
     if (response && response.link) {
       const { link: newLink } = response
       dialogOpen.value = false
@@ -123,17 +123,15 @@ async function onSubmit(formData) {
       if (formData.slug !== oldSlug) {
         toast('Slug is updated')
       } else {
-        toast(isEdit ? 'Link updated successfully' : 'Link created successfully')
+        isEdit ? toast('Link updated successfully') : toast('Link created successfully')
       }
     } else {
-      console.error('Unexpected API response structure:', response)
       throw new Error('Unexpected API response structure')
     }
   } catch (error) {
     console.error('Error updating/creating link:', error)
-    if (error.response) {
-      console.error('Error response status:', error.response.status)
-      console.error('Error response data:', error.response.data)
+    if (error.response && error.response.data) {
+      console.error('API Error response data:', error.response.data)
     }
     toast('An error occurred while saving the link')
   }
