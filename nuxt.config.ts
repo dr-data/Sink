@@ -47,7 +47,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    siteToken: 'SinkCool',
+    siteToken: '456123',
     redirectStatusCode: '301',
     homeURL: '',
     cfAccountId: '',
