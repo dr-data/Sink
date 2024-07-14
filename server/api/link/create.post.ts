@@ -5,33 +5,25 @@ export default eventHandler(async (event) => {
 
   const { cloudflare } = event.context
   const { KV } = cloudflare.env
-  
-  // Modify the slug before saving
-  const updatedSlug = modifySlug(link.slug)
-  
-  let existingLink = await KV.get(`link:${updatedSlug}`)
+  const existingLink = await KV.get(`link:${link.slug}`)
   if (existingLink) {
     throw createError({
       status: 409, // Conflict
       statusText: 'Link already exists',
     })
-  } else {
-    
+  }
+
+  else {
     const expiration = getExpiration(event, link.expiration)
 
-    await KV.put(`link:${updatedSlug}`, JSON.stringify({ ...link, slug: updatedSlug }), {
+    await KV.put(`link:${link.slug}`, JSON.stringify(link), {
       expiration,
       metadata: {
         expiration,
       },
     })
     setResponseStatus(event, 201)
-    return { link: { ...link, slug: updatedSlug } }
+    return { link }
+    
   }
 })
-
-// Function to modify the slug
-function modifySlug(slug: string): string {
-  // Example logic to modify the slug, this can be customized
-  return slug + '-updated'
-}
