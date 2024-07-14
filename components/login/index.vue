@@ -25,7 +25,7 @@ async function onSubmit(form) {
   }
   catch (e) {
     console.error(e)
-    toast.error('Login failed, please try again.', {
+    toast.error('Login failed, please try again. ', {
       description: e.message,
     })
   }
