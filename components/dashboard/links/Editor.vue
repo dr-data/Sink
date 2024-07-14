@@ -99,17 +99,22 @@ async function onSubmit(formData) {
     expiration: formData.optional?.expiration ? date2unix(formData.optional?.expiration, 'end') : undefined,
   }
   console.log('Link data to send:', linkData) // Debugging message
-  const { link: newLink } = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
-    method: isEdit ? 'PUT' : 'POST',
-    body: linkData,
-  })
-  dialogOpen.value = false
-  emit('update:link', newLink, isEdit ? 'edit' : 'create')
+  try {
+    const { link: newLink } = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
+      method: isEdit ? 'PUT' : 'POST',
+      body: linkData,
+    })
+    dialogOpen.value = false
+    emit('update:link', newLink, isEdit ? 'edit' : 'create')
   
-  if (formData.slug !== oldSlug) {
-    toast('Slug is updated')
-  } else {
-    isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+    if (formData.slug !== oldSlug) {
+      toast('Slug is updated')
+    } else {
+      isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+    }
+  } catch (error) {
+    console.error('Error updating/creating link:', error)
+    toast('An error occurred while saving the link')
   }
 }
 
