@@ -11,7 +11,7 @@ Please check the Cloudflare KV bindings, the KV environment variable name should
 
 ## 2. Why can't I log in?
 
-Please check if `NUXT_SITE_TOKEN` is set to pure numbers, Sink does not support pure number Tokens, we consider this to be unsafe.
+Please check if `NUXT_SITE_TOKEN` is set to pure numbers, Sink does not support pure number Tokens, we consider this to be unsafe. 
 
 ## 3. Why can't I see the analytics data?
 
