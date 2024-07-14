@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -89,15 +89,9 @@ onMounted(() => {
   }
 })
 
-// Watcher for slug field
-watch(() => form.values.slug, (newSlug, oldSlug) => {
-  if (newSlug !== oldSlug) {
-    toast('Slug is updated')
-  }
-})
-
 async function onSubmit(formData) {
-  const link = {
+  const oldSlug = link.value.slug
+  const linkData = {
     url: formData.url,
     slug: formData.slug,
     ...(formData.optional || []),
@@ -105,11 +99,16 @@ async function onSubmit(formData) {
   }
   const { link: newLink } = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
     method: isEdit ? 'PUT' : 'POST',
-    body: link,
+    body: linkData,
   })
   dialogOpen.value = false
   emit('update:link', newLink, isEdit ? 'edit' : 'create')
-  isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+  
+  if (formData.slug !== oldSlug) {
+    toast('Slug is updated')
+  } else {
+    isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+  }
 }
 
 const { previewMode } = useRuntimeConfig().public
