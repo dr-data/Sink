@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -89,6 +89,13 @@ onMounted(() => {
   }
 })
 
+// Watch for changes in the dialog open state to reset form if needed
+watch(dialogOpen, (newVal) => {
+  if (!newVal && !isEdit) {
+    form.resetForm()
+  }
+})
+
 async function onSubmit(formData) {
   console.log('Form data:', formData) // Debugging message
   const oldSlug = link.value.slug
@@ -112,7 +119,7 @@ async function onSubmit(formData) {
       const { link: newLink } = response
       dialogOpen.value = false
       emit('update:link', newLink, isEdit ? 'edit' : 'create')
-    
+  
       if (formData.slug !== oldSlug) {
         toast('Slug is updated')
       } else {
