@@ -105,15 +105,21 @@ async function onSubmit(formData) {
       method: isEdit ? 'PUT' : 'POST',
       body: linkData,
     })
-    const { link: newLink } = response
     console.log('API response:', response) // Debugging message
-    dialogOpen.value = false
-    emit('update:link', newLink, isEdit ? 'edit' : 'create')
-  
-    if (formData.slug !== oldSlug) {
-      toast('Slug is updated')
+
+    // Check if response has the expected structure
+    if (response && response.link) {
+      const { link: newLink } = response
+      dialogOpen.value = false
+      emit('update:link', newLink, isEdit ? 'edit' : 'create')
+    
+      if (formData.slug !== oldSlug) {
+        toast('Slug is updated')
+      } else {
+        isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+      }
     } else {
-      isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+      throw new Error('Unexpected API response structure')
     }
   } catch (error) {
     console.error('Error updating/creating link:', error)
@@ -134,9 +140,9 @@ const { previewMode } = useRuntimeConfig().public
         <Button
           class="ml-2"
           variant="outline"
-          @click="() => { dialogOpen.value = true; randomSlug(); }"
+          @click="() => { dialogOpen.value = true; if (!isEdit) randomSlug(); }"
         >
-          Create Link
+          {{ isEdit ? 'Edit Link' : 'Create Link' }}
         </Button>
       </slot>
     </DialogTrigger>
