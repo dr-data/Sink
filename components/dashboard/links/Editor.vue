@@ -1,4 +1,5 @@
 <script setup>
+import { ref, watch, onMounted } from 'vue'
 import { z } from 'zod'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
@@ -40,24 +41,12 @@ const EditLinkSchema = LinkSchema.pick({
 })
 
 const fieldConfig = {
-  slug: {
-    disabled: isEdit,
-  },
   optional: {
     comment: {
       component: 'textarea',
     },
   },
 }
-
-const dependencies = [
-  {
-    sourceField: 'slug',
-    type: DependencyType.DISABLES,
-    targetField: 'slug',
-    when: () => isEdit,
-  },
-]
 
 const form = useForm({
   validationSchema: toTypedSchema(EditLinkSchema),
@@ -78,8 +67,7 @@ function randomSlug() {
 
 const aiSlugPending = ref(false)
 async function aiSlug() {
-  if (!form.values.url)
-    return
+  if (!form.values.url) return
 
   aiSlugPending.value = true
   try {
@@ -89,8 +77,7 @@ async function aiSlug() {
       },
     })
     form.setFieldValue('slug', slug)
-  }
-  catch (error) {
+  } catch (error) {
     console.log(error)
   }
   aiSlugPending.value = false
@@ -99,6 +86,13 @@ async function aiSlug() {
 onMounted(() => {
   if (link.value.expiration) {
     form.setFieldValue('optional.expiration', unix2date(link.value.expiration))
+  }
+})
+
+// Watcher for slug field
+watch(() => form.values.slug, (newSlug, oldSlug) => {
+  if (newSlug !== oldSlug) {
+    toast('Slug is updated')
   }
 })
 
@@ -149,14 +143,10 @@ const { previewMode } = useRuntimeConfig().public
         :schema="EditLinkSchema"
         :form="form"
         :field-config="fieldConfig"
-        :dependencies="dependencies"
         @submit="onSubmit"
       >
         <template #slug="slotProps">
-          <div
-            v-if="!isEdit"
-            class="relative"
-          >
+          <div class="relative">
             <div class="absolute right-0 flex space-x-3 top-1">
               <Shuffle
                 class="w-4 h-4 cursor-pointer"
