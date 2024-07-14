@@ -32,6 +32,7 @@
     "pluralize": "^8.0.0",
     "qr-code-styling": "1.6.0-rc.1",
     "radix-vue": "^1.9.0",
+    "typescript": "^5.5.3",
     "ua-parser-js": "next",
     "vee-validate": "^4.13.2",
     "virtua": "^0.33.2",
