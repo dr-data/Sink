@@ -19,7 +19,7 @@ export default eventHandler(async (event) => {
   const updatedSlug = newSlug ? modifySlug(newSlug) : oldSlug
 
   // Check for slug conflict if the slug is updated
-  if (newSlug) {
+  if (newSlug && oldSlug !== updatedSlug) {
     const conflictLink = await KV.get(`link:${updatedSlug}`)
     if (conflictLink) {
       throw createError({
