@@ -78,7 +78,7 @@ async function aiSlug() {
     })
     form.setFieldValue('slug', slug)
   } catch (error) {
-    console.log(error)
+    console.log('Error generating AI slug:', error)
   }
   aiSlugPending.value = false
 }
@@ -99,12 +99,14 @@ async function onSubmit(formData) {
     expiration: formData.optional?.expiration ? date2unix(formData.optional?.expiration, 'end') : undefined,
   }
   console.log('Link data to send:', linkData) // Debugging message
+
   try {
     const response = await useAPI(isEdit ? '/api/link/edit' : '/api/link/create', {
       method: isEdit ? 'PUT' : 'POST',
       body: linkData,
     })
     const { link: newLink } = response
+    console.log('API response:', response) // Debugging message
     dialogOpen.value = false
     emit('update:link', newLink, isEdit ? 'edit' : 'create')
   
