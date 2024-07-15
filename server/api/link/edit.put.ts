@@ -9,63 +9,27 @@ export default eventHandler(async (event) => {
       statusText: 'Preview mode cannot edit links.',
     })
   }
-
-  // Parse the incoming request body
-  const { oldSlug, ...linkData } = await readValidatedBody(event, LinkSchema.extend({
-    oldSlug: z.string(),
-  }).parse)
-
+  const link = await readValidatedBody(event, LinkSchema.parse)
   const { cloudflare } = event.context
   const { KV } = cloudflare.env
 
-  // Fetch the existing link data using the old slug
-  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${oldSlug}`, { type: 'json' })
-  if (!existingLink) {
-    throw createError({
-      status: 404, // Not Found
-      statusText: 'Link not found',
-    })
-  }
-
-  // Determine the updated slug
-  const updatedSlug = linkData.slug !== oldSlug ? linkData.slug : oldSlug
-
-  // Check for slug conflict if the slug is updated
-  if (linkData.slug && oldSlug !== updatedSlug) {
-    const conflictLink = await KV.get(`link:${updatedSlug}`, { type: 'json' })
-    if (conflictLink) {
-      throw createError({
-        status: 409, // Conflict
-        statusText: 'Slug already exists',
-      })
+  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' })
+  if (existingLink) {
+    const newLink = {
+      ...existingLink,
+      ...link,
+      id: existingLink.id, // don't update id
+      createdAt: existingLink.createdAt, // don't update createdAt
+      updatedAt: Math.floor(Date.now() / 1000),
     }
-  }
-
-  // Create the new link object with updated data
-  const newLink = {
-    ...existingLink,
-    ...linkData,
-    slug: updatedSlug, // Update slug
-    id: existingLink.id, // Preserve original id
-    createdAt: existingLink.createdAt, // Preserve original creation date
-    updatedAt: Math.floor(Date.now() / 1000), // Update timestamp
-  }
-
-  const expiration = getExpiration(event, newLink.expiration)
-
-  // Save the updated link with the new slug
-  await KV.put(`link:${updatedSlug}`, JSON.stringify(newLink), {
-    expiration,
-    metadata: {
+    const expiration = getExpiration(event, newLink.expiration)
+    await KV.put(`link:${newLink.slug}`, JSON.stringify(newLink), {
       expiration,
-    },
-  })
-
-  // Delete the old link if the slug has changed
-  if (oldSlug !== updatedSlug) {
-    await KV.delete(`link:${oldSlug}`)
+      metadata: {
+        expiration,
+      },
+    })
+    setResponseStatus(event, 201)
+    return { link: newLink }
   }
-
-  setResponseStatus(event, 201)
-  return { link: newLink }
 })
