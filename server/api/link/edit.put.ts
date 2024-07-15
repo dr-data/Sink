@@ -19,11 +19,11 @@ export default eventHandler(async (event) => {
     const { cloudflare } = event.context
     const { KV } = cloudflare.env
 
-    console.log('Fetching existing link from KV storage:', link.slug)
+    console.log('Fetching existing link from KV storage with slug:', link.slug)
     const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' })
     
     if (!existingLink) {
-      console.log('Link not found:', link.slug)
+      console.log('Link not found for slug:', link.slug)
       throw createError({
         status: 404,
         statusText: 'Link not found',
@@ -53,6 +53,7 @@ export default eventHandler(async (event) => {
           expiration,
         },
       })
+      console.log('Updated link stored successfully')
     } catch (kvPutError) {
       console.error('Error storing updated link with new slug:', kvPutError)
       throw createError({
@@ -67,6 +68,7 @@ export default eventHandler(async (event) => {
       console.log('Removing old slug entry:', existingLink.slug)
       try {
         await KV.delete(`link:${existingLink.slug}`);
+        console.log('Old slug entry removed successfully')
       } catch (kvDeleteError) {
         console.error('Error removing old slug entry:', kvDeleteError)
         throw createError({
