@@ -11,7 +11,7 @@ export default eventHandler(async (event) => {
   }
 
   // Parse the incoming request body
-  const { oldSlug, ...linkData } = await readValidatedBody(event, LinkSchema.extend({
+  const { oldSlug, slug, ...linkData } = await readValidatedBody(event, LinkSchema.extend({
     oldSlug: z.string(),
   }).parse)
 
@@ -28,10 +28,10 @@ export default eventHandler(async (event) => {
   }
 
   // Determine the updated slug
-  const updatedSlug = linkData.slug !== oldSlug ? linkData.slug : oldSlug
+  const updatedSlug = slug && slug !== oldSlug ? slug : oldSlug
 
   // Check for slug conflict if the slug is updated
-  if (linkData.slug && oldSlug !== updatedSlug) {
+  if (slug && oldSlug !== updatedSlug) {
     const conflictLink = await KV.get(`link:${updatedSlug}`, { type: 'json' })
     if (conflictLink) {
       throw createError({
