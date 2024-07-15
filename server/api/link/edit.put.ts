@@ -13,7 +13,7 @@ export default eventHandler(async (event) => {
   const { cloudflare } = event.context;
   const { KV } = cloudflare.env;
 
-  // Check if the link with the old slug exists
+  // Fetch the existing link using the old slug
   const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.oldSlug}`, { type: 'json' });
 
   if (existingLink) {
