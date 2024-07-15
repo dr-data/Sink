@@ -1,32 +1,22 @@
-import type { z } from 'zod';
-import { LinkSchema } from '@/schemas/link';
+import type { z } from 'zod'
+import { LinkSchema } from '@/schemas/link'
 
 export default eventHandler(async (event) => {
-  const { previewMode } = useRuntimeConfig(event).public;
+  const { previewMode } = useRuntimeConfig(event).public
   if (previewMode) {
     throw createError({
       status: 403,
       statusText: 'Preview mode cannot edit links.',
-    });
+    })
   }
-  const link = await readValidatedBody(event, LinkSchema.parse);
-  const { cloudflare } = event.context;
-  const { KV } = cloudflare.env;
+  const link = await readValidatedBody(event, LinkSchema.parse)
+  const { cloudflare } = event.context
+  const { KV } = cloudflare.env
 
-  // Fetch the existing link using the old slug
-  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.oldSlug}`, { type: 'json' });
-
+  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' })
   if (existingLink) {
-    // Check if the new slug already exists
-    if (link.oldSlug !== link.slug) {
-      const newSlugLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' });
-      if (newSlugLink) {
-        throw createError({
-          status: 409,
-          statusText: 'The new slug already exists. Please choose a different slug.',
-        });
-      }
-    }
+    // Check if the slug is being updated
+    const isSlugUpdated = existingLink.slug !== link.slug;
 
     const newLink = {
       ...existingLink,
@@ -34,27 +24,23 @@ export default eventHandler(async (event) => {
       id: existingLink.id, // don't update id
       createdAt: existingLink.createdAt, // don't update createdAt
       updatedAt: Math.floor(Date.now() / 1000),
-    };
-    
-    // If slug is changed, delete the old link
-    if (link.oldSlug !== link.slug) {
-      await KV.delete(`link:${link.oldSlug}`);
     }
+    const expiration = getExpiration(event, newLink.expiration)
 
-    const expiration = getExpiration(event, newLink.expiration);
+    // Store updated link with new slug
     await KV.put(`link:${newLink.slug}`, JSON.stringify(newLink), {
       expiration,
       metadata: {
         expiration,
       },
-    });
+    })
 
-    setResponseStatus(event, 201);
-    return { link: newLink };
-  } else {
-    throw createError({
-      status: 404,
-      statusText: 'The link to be updated does not exist.',
-    });
+    // Remove the old slug entry if slug was updated
+    if (isSlugUpdated) {
+      await KV.delete(`link:${existingLink.slug}`);
+    }
+
+    setResponseStatus(event, 201)
+    return { link: newLink }
   }
-});
+})
