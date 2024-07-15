@@ -13,11 +13,12 @@ export default eventHandler(async (event) => {
   const { cloudflare } = event.context;
   const { KV } = cloudflare.env;
 
-  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' });
-  
+  // Check if the link with the old slug exists
+  const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.oldSlug}`, { type: 'json' });
+
   if (existingLink) {
-    // Check if new slug already exists
-    if (existingLink.slug !== link.slug) {
+    // Check if the new slug already exists
+    if (link.oldSlug !== link.slug) {
       const newSlugLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' });
       if (newSlugLink) {
         throw createError({
@@ -36,8 +37,8 @@ export default eventHandler(async (event) => {
     };
     
     // If slug is changed, delete the old link
-    if (existingLink.slug !== link.slug) {
-      await KV.delete(`link:${existingLink.slug}`);
+    if (link.oldSlug !== link.slug) {
+      await KV.delete(`link:${link.oldSlug}`);
     }
 
     const expiration = getExpiration(event, newLink.expiration);
@@ -47,7 +48,7 @@ export default eventHandler(async (event) => {
         expiration,
       },
     });
-    
+
     setResponseStatus(event, 201);
     return { link: newLink };
   } else {
