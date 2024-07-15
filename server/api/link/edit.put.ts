@@ -16,6 +16,17 @@ export default eventHandler(async (event) => {
   const existingLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' });
   
   if (existingLink) {
+    // Check if new slug already exists
+    if (existingLink.slug !== link.slug) {
+      const newSlugLink: z.infer<typeof LinkSchema> | null = await KV.get(`link:${link.slug}`, { type: 'json' });
+      if (newSlugLink) {
+        throw createError({
+          status: 409,
+          statusText: 'The new slug already exists. Please choose a different slug.',
+        });
+      }
+    }
+
     const newLink = {
       ...existingLink,
       ...link,
@@ -39,5 +50,10 @@ export default eventHandler(async (event) => {
     
     setResponseStatus(event, 201);
     return { link: newLink };
+  } else {
+    throw createError({
+      status: 404,
+      statusText: 'The link to be updated does not exist.',
+    });
   }
 });
