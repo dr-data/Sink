@@ -35,34 +35,6 @@ export default eventHandler(async (event) => {
     // Check if the slug is being updated
     const isSlugUpdated = existingLink.slug !== link.slug;
 
-    const newLink = {
-      ...existingLink,
-      ...link,
-      id: existingLink.id, // don't update id
-      createdAt: existingLink.createdAt, // don't update createdAt
-      updatedAt: Math.floor(Date.now() / 1000),
-    }
-    const expiration = getExpiration(event, newLink.expiration)
-
-    console.log('Storing updated link with new slug:', newLink.slug)
-    try {
-      // Store updated link with new slug
-      await KV.put(`link:${newLink.slug}`, JSON.stringify(newLink), {
-        expiration,
-        metadata: {
-          expiration,
-        },
-      })
-      console.log('Updated link stored successfully')
-    } catch (kvPutError) {
-      console.error('Error storing updated link with new slug:', kvPutError)
-      throw createError({
-        status: 500,
-        statusText: 'Failed to store updated link',
-        message: kvPutError.message || 'An error occurred while storing the updated link.',
-      })
-    }
-
     // Remove the old slug entry if slug was updated
     if (isSlugUpdated) { 
       console.log('Removing old slug entry:', existingLink.slug)
@@ -77,6 +49,36 @@ export default eventHandler(async (event) => {
           message: kvDeleteError.message || 'An error occurred while removing the old slug entry.',
         })
       }
+    }
+
+    // Create a new link with the updated slug
+    const newLink = {
+      ...existingLink,
+      ...link,
+      id: existingLink.id, // don't update id
+      createdAt: existingLink.createdAt, // don't update createdAt
+      updatedAt: Math.floor(Date.now() / 1000),
+      slug: link.slug // ensure the new slug is set
+    }
+    const expiration = getExpiration(event, newLink.expiration)
+
+    console.log('Creating new link with slug:', newLink.slug)
+    try {
+      // Store new link with the updated slug
+      await KV.put(`link:${newLink.slug}`, JSON.stringify(newLink), {
+        expiration,
+        metadata: {
+          expiration,
+        },
+      })
+      console.log('New link created successfully')
+    } catch (kvPutError) {
+      console.error('Error creating new link with updated slug:', kvPutError)
+      throw createError({
+        status: 500,
+        statusText: 'Failed to create new link',
+        message: kvPutError.message || 'An error occurred while creating the new link.',
+      })
     }
 
     setResponseStatus(event, 201)
