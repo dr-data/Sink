@@ -120,10 +120,14 @@ async function onSubmit(formData) {
       dialogOpen.value = false
       emit('update:link', newLink, isEdit ? 'edit' : 'create')
   
-      if (formData.slug !== oldSlug) {
-        toast('Slug is updated')
+      if (isEdit) {
+        if (formData.slug !== oldSlug) {
+          toast('Link and slug updated successfully')
+        } else {
+          toast('Link updated successfully')
+        }
       } else {
-        isEdit ? toast('Link updated successfully') : toast('Link created successfully')
+        toast('Link created successfully')
       }
     } else {
       throw new Error('Unexpected API response structure')
