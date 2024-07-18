@@ -8,6 +8,7 @@ import { toast } from 'vue-sonner'
 import { DependencyType } from '@/components/ui/auto-form/interface'
 import { LinkSchema, nanoid } from '@/schemas/link'
 
+
 const props = defineProps({
   link: {
     type: Object,

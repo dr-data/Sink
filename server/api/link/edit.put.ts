@@ -1,6 +1,7 @@
 import type { z } from 'zod'
 import { LinkSchema } from '@/schemas/link'
 
+// Comment the following code to test the error handling
 export default eventHandler(async (event) => {
   const { previewMode } = useRuntimeConfig(event).public
   try {
