@@ -1,6 +1,7 @@
 <script setup>
 import { Loader } from 'lucide-vue-next'
 import { useInfiniteScroll } from '@vueuse/core'
+import ExportLinks from './ExportLinks.vue'
 
 const links = ref([])
 const limit = 24
@@ -45,14 +46,10 @@ function updateLinkList(link, type) {
     <DashboardNav>
       <DashboardLinksEditor @update:link="updateLinkList" />
     </DashboardNav>
-    <section class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <DashboardLinksLink
-        v-for="link in links"
-        :key="link.id"
-        :link="link"
-        @update:link="updateLinkList"
-      />
-    </section>
+    <ExportLinks
+      :links="links"
+      @update:link="updateLinkList"
+    />
     <div
       v-if="isLoading"
       class="flex items-center justify-center"
@@ -63,7 +60,7 @@ function updateLinkList(link, type) {
       v-if="!isLoading && listComplete"
       class="flex items-center justify-center text-sm"
     >
-      No more
+      没有更多链接了
     </div>
   </main>
 </template>
