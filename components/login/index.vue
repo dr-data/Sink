@@ -21,7 +21,7 @@ async function onSubmit(form) {
   try {
     localStorage.setItem('SinkSiteToken', form.token)
     await useAPI('/api/verify')
-    navigateTo('/link')
+    navigateTo('/dashboard/links')
   }
   catch (e) {
     console.error(e)
