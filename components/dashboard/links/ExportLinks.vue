@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { Check, Download } from 'lucide-vue-next'
 import { useClipboard } from '@vueuse/core'
 import { toast } from 'vue-sonner'
+import QRCodeStyling from 'qr-code-styling'
 
 const props = defineProps({
   links: {
