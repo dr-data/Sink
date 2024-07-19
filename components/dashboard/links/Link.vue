@@ -1,5 +1,5 @@
 <script setup>
-import { CalendarPlus2, Copy, CopyCheck, Eraser, Hourglass, Link as LinkIcon, QrCode, SquareChevronDown, SquarePen } from 'lucide-vue-next'
+import { CalendarPlus2, Copy, CopyCheck, Eraser, Hourglass, Link as LinkIcon, QrCode, SquareChevronDown, SquarePen, MousePointerClick } from 'lucide-vue-next'
 import { useClipboard } from '@vueuse/core'
 import { toast } from 'vue-sonner'
 import { parseURL } from 'ufo'
@@ -180,6 +180,19 @@ function updateLink(link, type) {
         </template>
         <Separator orientation="vertical" />
         <span class="truncate">{{ link.url }}</span>
+        <Separator orientation="vertical" />
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <span class="inline-flex items-center leading-5">
+                <MousePointerClick class="w-4 h-4 mr-1" /> {{ link.visits || 0 }} clicks
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Total Clicks: {{ link.visits || 0 }}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </NuxtLink>
   </Card>
