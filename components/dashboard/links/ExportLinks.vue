@@ -57,20 +57,21 @@ async function exportCSV() {
     </Button>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card v-for="link in props.links" :key="link.id" class="relative">
-        <div class="absolute top-2 left-2">
+        <div class="flex items-center mb-2">
           <Button
             variant="outline"
             size="icon"
+            class="mr-2"
             @click="toggleLinkSelection(link)"
           >
             <Check v-if="selectedLinks.includes(link)" class="w-4 h-4" />
             <span v-else class="w-4 h-4 border-2 rounded-sm"></span>
           </Button>
+          <DashboardLinksLink
+            :link="link"
+            @update:link="$emit('update:link', $event)"
+          />
         </div>
-        <DashboardLinksLink
-          :link="link"
-          @update:link="$emit('update:link', $event)"
-        />
       </Card>
     </div>
   </div>
