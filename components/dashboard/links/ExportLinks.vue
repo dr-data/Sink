@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { Check, Download } from 'lucide-vue-next'
 import { useClipboard } from '@vueuse/core'
 import { toast } from 'vue-sonner'
-import QRCodeStyling from 'qr-code-styling'
 
 const props = defineProps({
   links: {
@@ -25,46 +24,28 @@ function toggleLinkSelection(link) {
 
 async function exportCSV() {
   if (selectedLinks.value.length === 0) {
-    toast('请先选择要导出的链接')
+    toast('Please select the links to export')
     return
   }
 
-  const csvContent = ['原始链接,短链接,QR码图片']
+  const csvContent = ['Link,Slug,QRCode']
 
   for (const link of selectedLinks.value) {
     const shortLink = `${window.location.origin}/${link.slug}`
-    const qrCodeUrl = await generateQRCode(shortLink)
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(shortLink)}`
     csvContent.push(`${link.url},${shortLink},${qrCodeUrl}`)
   }
 
   const blob = new Blob([csvContent.join('\n')], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.setAttribute('download', 'exported_links.csv')
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  const downloadLink = document.createElement('a')
+  downloadLink.href = url
+  downloadLink.setAttribute('download', 'exported_links.csv')
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  document.body.removeChild(downloadLink)
 
-  toast('导出成功')
-}
-
-async function generateQRCode(url) {
-  // 这里使用了之前定义的 QRCode 组件的逻辑
-  const qrCode = new QRCodeStyling({
-    width: 256,
-    height: 256,
-    data: url,
-    // ... 其他 QR 码配置
-  })
-
-  return new Promise((resolve) => {
-    qrCode.getRawData('png').then((blob) => {
-      const reader = new FileReader()
-      reader.onloadend = () => resolve(reader.result)
-      reader.readAsDataURL(blob)
-    })
-  })
+  toast('Successfully exported the links')
 }
 </script>
 
@@ -72,7 +53,7 @@ async function generateQRCode(url) {
   <div>
     <Button @click="exportCSV" class="mb-4">
       <Download class="w-4 h-4 mr-2" />
-      导出选中链接
+      Export the selected links
     </Button>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card v-for="link in props.links" :key="link.id" class="relative">
