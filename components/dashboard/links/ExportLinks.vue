@@ -57,7 +57,7 @@ async function exportCSV() {
     </Button>
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <Card v-for="link in props.links" :key="link.id" class="relative">
-        <div class="absolute top-2 right-2">
+        <div class="absolute top-2 left-2">
           <Button
             variant="outline"
             size="icon"
