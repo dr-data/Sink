@@ -38,7 +38,7 @@ function updateLink(link, type) {
     <div class="flex flex-col p-4 space-y-3">
       <NuxtLink
         class="flex-grow"
-        :to="`/dashboard/${link.slug}`"
+        :to="`/dashboard/link?slug=${link.slug}`"
       >
         <div class="flex items-center justify-center space-x-3">
           <Avatar>
