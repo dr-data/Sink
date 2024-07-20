@@ -38,7 +38,7 @@ function updateLink(link, type) {
     <div class="flex flex-col p-4 space-y-3">
       <NuxtLink
         class="flex-grow"
-        :to="`/dashboard/link?slug=${link.slug}`"
+        :to="`/dashboard/${link.slug}`"
       >
         <div class="flex items-center justify-center space-x-3">
           <Avatar>
@@ -186,11 +186,11 @@ function updateLink(link, type) {
             <Tooltip>
               <TooltipTrigger as-child>
                 <span class="inline-flex items-center leading-5">
-                  <MousePointerClick class="w-4 h-4 mr-1" /> {{ link.visits || 0 }} clicks
+                  <MousePointerClick class="w-4 h-4 mr-1" /> {{ link.counters.visits || 0 }} clicks
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Total Clicks: {{ link.visits || 0 }}</p>
+                <p>Total Clicks: {{ link.counters.visits || 0 }}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
