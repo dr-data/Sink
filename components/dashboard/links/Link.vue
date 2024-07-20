@@ -186,11 +186,11 @@ function updateLink(link, type) {
             <Tooltip>
               <TooltipTrigger as-child>
                 <span class="inline-flex items-center leading-5">
-                  <MousePointerClick class="w-4 h-4 mr-1" /> {{ link.counters?.visits || 0 }} clicks
+                  <MousePointerClick class="w-4 h-4 mr-1" /> {{ link.counters?.visits || 0 }} visits
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Total Clicks: {{ link.counters?.visits || 0 }}</p>
+                <p>Total Visits: {{ link.counters?.visits || 0 }}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
