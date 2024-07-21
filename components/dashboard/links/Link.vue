@@ -57,7 +57,7 @@ function updateLink(link, type) {
           <div class="flex-1 overflow-hidden">
             <div class="flex items-center">
               <div class="font-bold leading-5 truncate text-md">
-                {{ link.slug }}
+                 {{ link.slug }}
               </div>
 
               <CopyCheck
