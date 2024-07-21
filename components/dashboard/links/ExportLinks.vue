@@ -55,7 +55,7 @@ async function exportCSV() {
       <Download class="w-4 h-4 mr-2" />
       Export the selected links
     </Button>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2">
       <Card v-for="link in props.links" :key="link.id" class="relative">
         <div class="flex items-center mb-2">
           <Button
