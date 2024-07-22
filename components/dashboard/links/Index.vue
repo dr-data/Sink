@@ -61,7 +61,7 @@ function updateLinkList(link, type) {
       v-if="!isLoading && listComplete"
       class="flex items-center justify-center text-sm"
     >
-      没有更多链接了
+      No more links
     </div>
   </main>
 </template>
