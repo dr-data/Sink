@@ -48,9 +48,24 @@ async function importCSV(event) {
   const text = await file.text()
   const rows = text.split('\n').map(row => row.split(','))
   
-  // Assuming the CSV format is: link,slug,comment
+  const existingLinks = new Set(links.value.map(link => link.slug)); // Collect existing slugs
+  let hasDuplicates = false;
+
   for (const row of rows) {
-    const [url, slug, comment] = row
+    const [url, slug, comment] = row;
+    if (existingLinks.has(slug)) {
+      hasDuplicates = true; // Mark if any slug is a duplicate
+      break;
+    }
+  }
+
+  if (hasDuplicates) {
+    toast('Duplicate link or slug found. Import skipped.');
+    return;
+  }
+
+  for (const row of rows) {
+    const [url, slug, comment] = row;
     const linkData = {
       url,
       slug,
@@ -76,6 +91,7 @@ async function importCSV(event) {
     <DashboardNav>
       <DashboardLinksEditor @update:link="updateLinkList" />
       <input type="file" accept=".csv" @change="importCSV" class="mb-4" />
+      <Button @click="importCSV" class="mb-4">Import Links</Button>
     </DashboardNav>
     <ExportLinks
       :links="links"
