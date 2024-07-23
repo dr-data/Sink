@@ -42,17 +42,23 @@ function updateLinkList(link, type) {
 }
 
 async function importCSV(event) {
-  const file = event.target.files[0]
-  if (!file) return
+  const file = event.target.files[0];
+  if (!file) return;
 
-  const text = await file.text()
-  const rows = text.split('\n').map(row => row.split(','))
-  
+  const text = await file.text();
+  const rows = text.split('\n').map(row => row.split(','));
+
+  // Check if the first row is the header
+  if (rows[0][0] !== 'link' || rows[0][1] !== 'slug' || rows[0][2] !== 'comment') {
+    toast('Invalid CSV format. Please ensure the first row is the header: link,slug,comment.');
+    return;
+  }
+
   const existingLinks = new Set(links.value.map(link => link.slug)); // Collect existing slugs
   let hasDuplicates = false;
 
-  for (const row of rows) {
-    const [url, slug, comment] = row;
+  for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+    const [url, slug, comment] = rows[i];
     if (existingLinks.has(slug)) {
       hasDuplicates = true; // Mark if any slug is a duplicate
       break;
@@ -64,8 +70,8 @@ async function importCSV(event) {
     return;
   }
 
-  for (const row of rows) {
-    const [url, slug, comment] = row;
+  for (let i = 1; i < rows.length; i++) { // Start from 1 to skip header
+    const [url, slug, comment] = rows[i];
     const linkData = {
       url,
       slug,
@@ -73,16 +79,16 @@ async function importCSV(event) {
         comment,
         createdAt: new Date().toISOString(), // Use current date unless specified
       },
-    }
-    
+    };
+
     // Send the link data to the API
     await useAPI('/api/link/create', {
       method: 'POST',
       body: linkData,
-    })
+    });
   }
 
-  toast('Links imported successfully!')
+  toast('Links imported successfully!');
 }
 </script>
 
