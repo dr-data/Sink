@@ -3,5 +3,9 @@ upload_source_maps = true
 [dev]
 port = 3000
 
+kv_namespaces = [
+  { binding = "KV", id = "KV" }
+]
+
 [ai]
 binding = "AI"
