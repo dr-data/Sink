@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid Inline Migrations During Read Operations in KV
+**Learning:** Performing inline migrations (like `KV.put`) during read-heavy operations like searching leads to massive write explosions. In a serverless or KV store environment like Cloudflare KV, every concurrent search triggers a write for unconverted items, blocking the request and racking up excessive costs and API call counts (e.g. 66.62k/month).
+**Action:** Always decouple migrations from read endpoints. Fallback for backwards compatibility should be purely read-only on the hot path. If a migration is needed, run it asynchronously, in a background task, or in a dedicated script.
