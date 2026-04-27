@@ -1,0 +1,3 @@
+## 2024-04-28 - Inline DB Migrations in GET Requests cause Excessive Writes
+**Learning:** Performing automatic/inline migrations (e.g., updating missing metadata using `KV.put`) within read operations (like search or list GET requests) causes massive write spikes and performance degradation in serverless/KV environments. This codebase experienced ~66k write operations in a month because a search GET route was silently rewriting KV records.
+**Action:** Never use inline write operations within GET routes to perform "on-the-fly" schema migrations or data backfilling, especially in heavily accessed endpoints. Remove these and rely on either explicit migration scripts or just handle backward compatibility at the read layer without saving it back.
