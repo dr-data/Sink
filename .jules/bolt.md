@@ -1,0 +1,3 @@
+## 2024-05-01 - Avoid inline database migrations during read operations
+**Learning:** Performing inline database migrations (like `KV.put` to update metadata) within read operations (GET requests) causes excessive write operations and can lead to performance degradation or serverless execution timeouts. In this codebase, it led to over 66k writing operations in a month.
+**Action:** Prefer standalone offline scripts executed out-of-band (e.g., via CI/CD) over creating admin API endpoints or performing inline migrations during read paths to avoid exposing security vulnerabilities and hitting serverless execution timeouts.
