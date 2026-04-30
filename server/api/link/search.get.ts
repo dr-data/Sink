@@ -32,21 +32,15 @@ export default eventHandler(async (event) => {
             }
             else {
               // Forward compatible with links without metadata
-              const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
+              const { value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
               if (link) {
                 list.push({
                   slug: key.name.replace('link:', ''),
                   url: link.url,
                   comment: link.comment,
                 })
-                await KV.put(key.name, JSON.stringify(link), {
-                  expiration: metadata?.expiration,
-                  metadata: {
-                    ...metadata,
-                    url: link.url,
-                    comment: link.comment,
-                  },
-                })
+                // Bolt: Removed inline KV.put migration during read operation to prevent excessive writes.
+                // Migrations should be handled out-of-band via offline scripts.
               }
             }
           }
