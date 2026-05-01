@@ -1,0 +1,3 @@
+## 2024-05-17 - Avoid Inline KV Migrations in Serverless Read Operations
+**Learning:** Performing inline database migrations (like `KV.put`) within read operations (`GET` endpoints) on Cloudflare KV triggers excessive write operations (in this case, ~66k ops in a month) and can lead to performance degradation, elevated costs, and serverless execution timeouts.
+**Action:** When data structure or metadata needs to be migrated in Cloudflare KV, implement the migration via an out-of-band offline script executed through CI/CD (e.g. `wrangler kv bulk put`), rather than embedding mutation logic within real-time GET request paths.
