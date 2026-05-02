@@ -1,0 +1,3 @@
+## 2025-05-02 - Avoid Inline KV Migrations in Serverless GET Handlers
+**Learning:** Performing inline database migrations (like writing back to KV using `KV.put`) inside read operations (such as GET request handlers like `search.get.ts`) creates massive spikes in write operations. This happens because the serverless function executes the write operation every time unmigrated data is accessed, dramatically increasing execution time, costing extra writes, and potentially hitting serverless execution timeouts or rate limits.
+**Action:** Always prefer standalone, out-of-band offline migration scripts (e.g., Node.js scripts executed via CI/CD pipelines) for backfilling data or updating database schemas, avoiding synchronous mutations during data retrieval.
