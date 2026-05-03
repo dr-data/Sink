@@ -1,0 +1,3 @@
+## 2024-05-03 - Inline Database Migration Performance Bottleneck
+**Learning:** Performing inline database migrations (such as `KV.put`) within read operations (`GET` endpoints) like `search.get.ts` in a Serverless/Cloudflare Workers KV architecture leads to massive performance degradation and excessive write operations (e.g., 66.62k writing operations). This pattern causes serverless functions to hang or execute for longer durations, hitting execution timeouts and drastically increasing costs.
+**Action:** Prefer implementing data migrations out-of-band via standalone, offline Node.js scripts executed separately (e.g., in CI/CD via `wrangler kv:key put` using `execFileSync`) to ensure read operations are purely read-only, fast, and optimized.
