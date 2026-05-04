@@ -1,0 +1,3 @@
+## 2026-05-04 - KV Inline Migration Write Amplification
+**Learning:** Found a severe performance bottleneck where Cloudflare KV write operations were happening during GET requests (`server/api/link/search.get.ts`). The API was doing an inline migration (`KV.put`) for legacy records missing metadata, causing massive write amplification (66.62k writes/month).
+**Action:** Always avoid mutating state (especially database writes) inside read endpoints. Data migrations for serverless DBs like Cloudflare KV should be performed via standalone offline scripts (e.g., using `wrangler kv:key put`) executed during CI/CD to prevent exhausting serverless timeouts and driving up costs.
