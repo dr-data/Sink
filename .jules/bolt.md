@@ -1,0 +1,3 @@
+## 2024-05-06 - KV Inline Migrations Cause Excessive Write Operations
+**Learning:** Performing inline Cloudflare KV migrations (`KV.put`) within read operations (`GET` requests) for legacy entries causes severe write multiplication during common operations like searches. This is highly inefficient in serverless/KV environments where operations are charged per request and writes are more expensive/slower than reads.
+**Action:** Always prefer off-band or CI/CD orchestrated standalone tasks (like Nitro Tasks in `server/tasks/`) for data migrations, rather than auto-migrating data during read endpoints.
