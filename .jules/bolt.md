@@ -1,0 +1,3 @@
+## 2024-05-07 - KV inline writes during reads
+**Learning:** Performing inline KV migrations (e.g. `KV.put`) within read operations causes an explosion of writes on unmigrated objects since reads are frequent. Also, within NuxtHub Nitro tasks (`server/tasks/`), `hubKV()` exposes an `unstorage` wrapper with methods like `getKeys` and `getMeta`, requiring a different API footprint than native Cloudflare `KV.list()`.
+**Action:** Always decouple KV migration tasks from normal read API endpoints. Use dedicated Nitro tasks (`server/tasks/*.ts`) relying on the `unstorage` API format (`getKeys()`, `getItemRaw()`, `getMeta()`, `setItem()`) instead of raw `KV.list` which lacks context in task environment.
