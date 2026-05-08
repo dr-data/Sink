@@ -1,0 +1,3 @@
+## 2024-05-08 - Avoid Inline KV Migrations on Read Endpoints
+**Learning:** Performing inline database migrations (like `KV.put`) during read operations (e.g., GET requests for search) causes excessive write operations and cost bottlenecks in serverless/KV environments.
+**Action:** Always prefer dedicated offline migration scripts or Nitro tasks (`server/tasks/`) for data migrations, and ensure read endpoints only read data. Also, use native Cloudflare KV bindings (`context.cloudflare.env.KV`) if specific options like `metadata` need to be modified, as the `unstorage` wrapper `hubKV()` might not easily expose those settings.
