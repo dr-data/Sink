@@ -1,0 +1,3 @@
+## 2024-05-11 - Avoid Inline Database Migrations in Serverless GET Requests
+**Learning:** Performing inline database migrations (like `KV.put`) inside read operations (GET requests) to "lazily" backfill data in a serverless environment like Cloudflare Workers causes explosive growth in write operations. This happened in `server/api/link/search.get.ts` where iterating over a list of items and updating missing metadata generated ~66k write operations a month, leading to performance degradation and increased costs.
+**Action:** Always prefer executing out-of-band data migrations. Use Nitro tasks (e.g., in `server/tasks/`) or separate offline scripts executed via CI/CD to handle backfilling or schema updates rather than side-effecting read endpoints.
