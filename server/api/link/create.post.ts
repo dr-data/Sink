@@ -26,8 +26,7 @@ export default eventHandler(async (event) => {
       expiration,
       metadata: {
         expiration,
-        url: link.url,
-        comment: link.comment,
+        ...link, // Store the full link object in metadata to avoid N+1 queries during reads
       },
     })
     setResponseStatus(event, 201)

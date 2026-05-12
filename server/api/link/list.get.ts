@@ -13,7 +13,16 @@ export default eventHandler(async (event) => {
     cursor: cursor || undefined,
   })
   if (Array.isArray(list.keys)) {
-    list.links = await Promise.all(list.keys.map(async (key: { name: string }) => {
+    list.links = await Promise.all(list.keys.map(async (key: { name: string, metadata?: any }) => {
+      // If the entire link is available in the metadata (migrated), return it to avoid N+1 query
+      if (key.metadata?.url && key.metadata?.id) {
+        return {
+          ...key.metadata,
+          slug: key.name.replace('link:', ''),
+        }
+      }
+
+      // Fallback to getWithMetadata which causes N+1 queries for non-migrated links
       const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
       if (link) {
         return {
