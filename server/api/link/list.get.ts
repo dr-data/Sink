@@ -13,10 +13,20 @@ export default eventHandler(async (event) => {
     cursor: cursor || undefined,
   })
   if (Array.isArray(list.keys)) {
-    list.links = await Promise.all(list.keys.map(async (key: { name: string }) => {
+    list.links = await Promise.all(list.keys.map(async (key: { name: string, metadata?: Record<string, any> }) => {
+      // If metadata contains the full object (indicated by presence of id or slug, etc), use it directly
+      if (key.metadata && key.metadata.url && (key.metadata.id || key.metadata.slug)) {
+        return {
+          slug: key.name.replace('link:', ''),
+          ...key.metadata,
+        }
+      }
+
+      // Fallback for non-migrated links
       const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
       if (link) {
         return {
+          slug: key.name.replace('link:', ''),
           ...metadata,
           ...link,
         }
