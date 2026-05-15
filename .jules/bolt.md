@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid Inline KV Migrations in Serverless GET Endpoints
+**Learning:** Performing inline database migrations (like `KV.put`) during read operations (e.g., `KV.list` or GET endpoints) can cause severe performance degradation and excessive write operations (e.g., 66.62k writes/month), leading to bottlenecks and timeouts in a serverless environment (Cloudflare Workers/KV).
+**Action:** Always implement database structure migrations for Cloudflare KV as out-of-band operations. For NuxtHub/Nitro applications, use Nitro tasks (`server/tasks/`) or offline CI/CD scripts to perform bulk migrations, keeping read endpoints strictly read-only.
