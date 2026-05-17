@@ -1,0 +1,67 @@
+export default defineTask({
+  meta: {
+    name: 'migrate-kv-links-metadata',
+    description: 'Migrates existing links in KV to include metadata, preventing N+1 queries during search.',
+  },
+  async run() {
+    const globalAny = globalThis as any
+    const KV = process.env.KV || globalAny.__env__?.KV || globalAny.KV
+
+    if (!KV) {
+      console.error('KV binding not found')
+      return { result: 'Error: KV binding not found' }
+    }
+
+    let finalCursor: string | undefined
+    let migratedCount = 0
+    let totalCount = 0
+
+    try {
+      while (true) {
+        const { keys, list_complete, cursor } = await KV.list({
+          prefix: `link:`,
+          limit: 1000,
+          cursor: finalCursor,
+        })
+
+        finalCursor = cursor
+
+        if (Array.isArray(keys)) {
+          for (const key of keys) {
+            totalCount++
+            try {
+              if (!key.metadata?.url) {
+                const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
+                if (link && link.url) {
+                  await KV.put(key.name, JSON.stringify(link), {
+                    expiration: metadata?.expiration,
+                    metadata: {
+                      ...metadata,
+                      url: link.url,
+                      comment: link.comment,
+                    },
+                  })
+                  migratedCount++
+                }
+              }
+            }
+            catch (err) {
+              console.error(`Error processing key ${key.name}:`, err)
+            }
+          }
+        }
+
+        if (!keys || list_complete) {
+          break
+        }
+      }
+
+      console.log(`Migration complete. Migrated ${migratedCount} out of ${totalCount} links.`)
+      return { result: `Success: Migrated ${migratedCount} out of ${totalCount} links.` }
+    }
+    catch (err) {
+      console.error('Error during migration:', err)
+      return { result: `Error: ${err instanceof Error ? err.message : String(err)}` }
+    }
+  },
+})
