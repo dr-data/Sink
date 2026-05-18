@@ -1,0 +1,3 @@
+## 2024-05-18 - [Avoid Inline KV Migrations in Hot Paths]
+**Learning:** [Executing Cloudflare KV writes (`KV.put`) within read-heavy endpoints like `search.get.ts` to perform lazily-evaluated data migrations causes excessive and redundant write operations when multiple concurrent read requests hit the unmigrated keys. This can easily spike write operations exponentially.]
+**Action:** [Instead of inline database migrations, implement migration scripts as standalone Nitro Tasks (e.g., in `server/tasks/`) to be executed out-of-band via CI/CD pipelines.]

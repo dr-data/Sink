@@ -32,21 +32,16 @@ export default eventHandler(async (event) => {
             }
             else {
               // Forward compatible with links without metadata
-              const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
+              const { value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
               if (link) {
                 list.push({
                   slug: key.name.replace('link:', ''),
                   url: link.url,
                   comment: link.comment,
                 })
-                await KV.put(key.name, JSON.stringify(link), {
-                  expiration: metadata?.expiration,
-                  metadata: {
-                    ...metadata,
-                    url: link.url,
-                    comment: link.comment,
-                  },
-                })
+                // Bolt: Removed inline KV.put() here to prevent excessive write operations during reads
+                // This prevents N+1 redundant writes on unmigrated keys.
+                // Migration is now handled via a Nitro task in server/tasks/migrate.ts
               }
             }
           }
