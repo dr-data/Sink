@@ -1,0 +1,3 @@
+## 2024-05-20 - Prevent Write Amplification in Serverless KV Reads
+**Learning:** Performing inline data migrations (e.g., `KV.put`) within GET request handlers (like list or search endpoints) in a Cloudflare KV/Nitro environment causes severe write amplification (e.g., 66k writes/month). This degrades performance, consumes execution time, and increases costs.
+**Action:** When migrating data shapes or adding metadata in a serverless environment, always create a dedicated Nitro Task (`server/tasks/*.ts`) or an out-of-band offline script to handle the migration asynchronously, and remove any `KV.put` or similar write operations from read-only (GET) endpoints.
