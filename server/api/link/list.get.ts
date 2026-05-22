@@ -13,7 +13,14 @@ export default eventHandler(async (event) => {
     cursor: cursor || undefined,
   })
   if (Array.isArray(list.keys)) {
-    list.links = await Promise.all(list.keys.map(async (key: { name: string }) => {
+    list.links = await Promise.all(list.keys.map(async (key: { name: string, metadata?: Record<string, any> }) => {
+      // Memory: "To avoid N+1 query problems when fetching lists from Cloudflare KV, store the complete record object (e.g., link data) in the KV entry's metadata during creation/updates... Leverage this metadata directly from KV.list() rather than calling KV.getWithMetadata() for individual keys."
+      if (key.metadata && key.metadata.url) {
+        return {
+          slug: key.name.replace('link:', ''),
+          ...key.metadata,
+        }
+      }
       const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
       if (link) {
         return {
