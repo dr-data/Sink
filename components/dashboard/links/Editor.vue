@@ -1,10 +1,10 @@
 <script setup>
+import { LinkSchema, nanoid } from '@/schemas/link'
 import { toTypedSchema } from '@vee-validate/zod'
 import { Shuffle, Sparkles } from 'lucide-vue-next'
 import { useForm } from 'vee-validate'
 import { toast } from 'vue-sonner'
 import { z } from 'zod'
-import { LinkSchema, nanoid } from '@/schemas/link'
 
 const props = defineProps({
   link: {

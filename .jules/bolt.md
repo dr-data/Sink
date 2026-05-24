@@ -1,0 +1,3 @@
+## 2024-03-24 - Avoid Inline KV Writes During Reads
+**Learning:** In Cloudflare KV/Nitro setups, performing data migration (`KV.put`) dynamically inside GET request handlers (e.g. `search.get.ts`) to backfill missing metadata triggers thousands of write operations overhead. It can be a massive performance degradation and cost implication.
+**Action:** Always handle missing metadata gracefully in read operations (without `KV.put`) and defer backfilling or missing data mutations to out-of-band CI/CD Nitro tasks (`defineTask`) that can iterate `KV.list()` sequentially, preventing serverless timeouts and removing the inline write bottleneck.

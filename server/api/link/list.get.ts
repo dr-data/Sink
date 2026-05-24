@@ -13,7 +13,15 @@ export default eventHandler(async (event) => {
     cursor: cursor || undefined,
   })
   if (Array.isArray(list.keys)) {
-    list.links = await Promise.all(list.keys.map(async (key: { name: string }) => {
+    list.links = await Promise.all(list.keys.map(async (key: { name: string, metadata?: any }) => {
+      // Optmization: Use available metadata from KV.list to avoid N+1 queries
+      if (key.metadata && key.metadata.url) {
+        return {
+          slug: key.name.replace('link:', ''),
+          ...key.metadata,
+        }
+      }
+
       const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' })
       if (link) {
         return {

@@ -25,9 +25,8 @@ export default eventHandler(async (event) => {
     await KV.put(`link:${link.slug}`, JSON.stringify(link), {
       expiration,
       metadata: {
+        ...link,
         expiration,
-        url: link.url,
-        comment: link.comment,
       },
     })
     setResponseStatus(event, 201)

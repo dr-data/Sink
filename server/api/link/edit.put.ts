@@ -54,9 +54,8 @@ export default eventHandler(async (event) => {
     await KV.put(`link:${link.slug}`, JSON.stringify(newLink), {
       expiration,
       metadata: {
+        ...newLink,
         expiration,
-        url: newLink.url,
-        comment: newLink.comment,
       },
     })
 
@@ -89,9 +88,8 @@ export default eventHandler(async (event) => {
   await KV.put(`link:${link.slug}`, JSON.stringify(updatedLink), {
     expiration,
     metadata: {
+      ...updatedLink,
       expiration,
-      url: updatedLink.url,
-      comment: updatedLink.comment,
     },
   })
 
