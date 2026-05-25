@@ -1,0 +1,3 @@
+## 2024-05-25 - Avoid Inline KV Migrations on Read Paths
+**Learning:** Performing inline database migrations (like `KV.put`) within a read endpoint (`GET` request) causes massive spikes in write operations. In this application, fetching links without metadata triggered `KV.put` for every such link, resulting in >60k writes/month. Cloudflare KV limits and costs make this anti-pattern highly detrimental to performance and scaling.
+**Action:** Always migrate Cloudflare KV data out-of-band. For missing metadata or data structure updates, create dedicated offline scripts or NuxtHub Nitro tasks (`server/tasks/`) to perform the `KV.put` operations outside the user's request lifecycle, ensuring smooth reads and no unnecessary writes.
