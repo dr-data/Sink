@@ -1,0 +1,3 @@
+## 2024-05-28 - Avoid Inline KV Migrations on Read
+**Learning:** Performing inline database migrations (like `KV.put` to backfill metadata) during a `GET` request results in excessive write operations because every read for an outdated entry triggers a write, which severely degrades performance and incurs unnecessary costs in Cloudflare KV environments where reads should be fast and writes are capped/expensive.
+**Action:** Always implement database migrations out-of-band using separate offline scripts or Nitro tasks (like `server/tasks/`) that can be executed via CI/CD, keeping read operations purely read-only.
