@@ -1,0 +1,3 @@
+## 2025-01-20 - Inline DB Migrations in Serverless/KV Reads
+**Learning:** Performing inline database migrations (like `KV.put`) during read operations (e.g., `search.get.ts` fetching links via `KV.list()`) to patch missing metadata causes a massive spike in write operations when many legacy records exist. This causes performance degradation and high costs on Serverless/KV environments.
+**Action:** Always handle data schema migrations out-of-band using separate offline scripts or Nitro tasks (e.g., `server/tasks/migrate.ts`). Keep read endpoints strictly for reading and avoid mixing writes into them unless absolutely isolated to a single updated record.
