@@ -1,0 +1,3 @@
+## 2024-05-24 - Avoid Inline Migrations in Serverless KV
+**Learning:** Found a severe performance anti-pattern in the codebase: doing an inline data migration (a `KV.put`) during a read operation (a GET request for a list) to populate missing metadata. Because this triggered on every request iterating over unmigrated data, it caused tens of thousands of unnecessary KV write operations, severely degrading performance and increasing costs.
+**Action:** Always migrate KV data out-of-band. I've created a dedicated Nitro task (`server/tasks/migrate-links.ts`) to handle this asynchronously via CI/CD, and removed the inline `KV.put` from the read path.
