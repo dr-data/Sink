@@ -1,0 +1,3 @@
+## 2025-02-12 - Prevent Inline KV Migrations on GET Requests
+**Learning:** Found a severe performance anti-pattern specific to this serverless/KV architecture: placing inline database migrations (`KV.put` calls to backfill metadata) inside a search/read endpoint (`server/api/link/search.get.ts`). This caused massive write operations (66.62k) during reads.
+**Action:** Avoid inline mutations within `GET` requests in serverless environments to prevent excessive operations. Move data migrations into dedicated out-of-band Nitro tasks (`server/tasks/*`) using the native Cloudflare KV binding instead.
