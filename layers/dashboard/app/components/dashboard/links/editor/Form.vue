@@ -18,6 +18,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+// Original slug captured at open time; sent as `oldSlug` on edit so the API can
+// rename the link when the slug field is changed.
+const originalSlug = props.link.slug ?? ''
+
 const urlValidator = LinkSchema.shape.url
 const slugValidator = LinkSchema.shape.slug
 const commentValidator = z.string().max(500).optional()
@@ -81,6 +85,7 @@ const form = useForm({
         password: getPasswordSubmitValue(value.password),
         unsafe: props.isEdit ? value.unsafe : value.unsafe || undefined,
         geo: Object.keys(geoRecord).length > 0 ? geoRecord : undefined,
+        oldSlug: props.isEdit ? originalSlug : undefined,
       }
       const { link: newLink } = await useAPI<{ link: Link }>(
         props.isEdit ? '/api/link/edit' : '/api/link/create',
@@ -224,7 +229,7 @@ defineExpose({ randomSlug })
             <FieldLabel :for="field.name">
               {{ $t('links.form.slug') }}
             </FieldLabel>
-            <div v-if="!isEdit" class="flex space-x-3">
+            <div class="flex space-x-3">
               <Button
                 type="button"
                 variant="ghost"
@@ -255,7 +260,6 @@ defineExpose({ randomSlug })
             :id="field.name"
             :name="field.name"
             :model-value="field.state.value"
-            :disabled="isEdit"
             :aria-invalid="getAriaInvalid(field)"
             placeholder="my-short-link"
             autocomplete="off"

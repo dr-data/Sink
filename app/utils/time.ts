@@ -15,12 +15,16 @@ export function getLocale() {
   return Intl.DateTimeFormat().resolvedOptions().locale
 }
 
-export function shortDate(unix = 0, locale?: string) {
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'short' }).format(unix * 1000)
+export function shortDate(unix = 0, _locale?: string) {
+  const d = new Date(unix * 1000)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}/${m}/${day}`
 }
 
 export function longDate(unix = 0, locale?: string) {
-  return new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(unix * 1000)
+  return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'long', day: 'numeric' }).format(unix * 1000)
 }
 
 export function shortTime(unix = 0, locale?: string) {

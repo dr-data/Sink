@@ -408,6 +408,52 @@ describe.sequential('/api/link/edit', () => {
   })
 })
 
+describe.sequential('/api/link/edit slug rename', () => {
+  it('renames slug, removes the old key, and preserves id/createdAt', async () => {
+    const oldSlug = `rename-from-${crypto.randomUUID()}`
+    const newSlug = `rename-to-${crypto.randomUUID()}`
+
+    const createResponse = await postJson('/api/link/create', { url: 'https://example.com', slug: oldSlug })
+    expect(createResponse.status).toBe(201)
+    const created = (await createResponse.json() as { link: { id: string, createdAt: number } }).link
+
+    const renameResponse = await putJson('/api/link/edit', { url: 'https://example.com', slug: newSlug, oldSlug })
+    expect(renameResponse.status).toBe(201)
+    const renamed = (await renameResponse.json() as { link: { slug: string, id: string, createdAt: number } }).link
+    expect(renamed.slug).toBe(newSlug)
+    expect(renamed.id).toBe(created.id)
+    expect(renamed.createdAt).toBe(created.createdAt)
+
+    // Old key removed, new key present.
+    expect(await getStoredLink(oldSlug)).toBeNull()
+    const storedNew = await getStoredLink(newSlug)
+    expect(storedNew?.id).toBe(created.id)
+  })
+
+  it('returns 409 when the new slug already exists', async () => {
+    const oldSlug = `rename-src-${crypto.randomUUID()}`
+    const takenSlug = `rename-taken-${crypto.randomUUID()}`
+
+    await postJson('/api/link/create', { url: 'https://example.com', slug: oldSlug })
+    await postJson('/api/link/create', { url: 'https://example.com', slug: takenSlug })
+
+    const response = await putJson('/api/link/edit', { url: 'https://example.com', slug: takenSlug, oldSlug })
+    expect(response.status).toBe(409)
+
+    // Original link is left untouched on conflict.
+    expect(await getStoredLink(oldSlug)).not.toBeNull()
+  })
+
+  it('returns 404 when the original slug does not exist', async () => {
+    const response = await putJson('/api/link/edit', {
+      url: 'https://example.com',
+      slug: `rename-new-${crypto.randomUUID()}`,
+      oldSlug: `rename-missing-${crypto.randomUUID()}`,
+    })
+    expect(response.status).toBe(404)
+  })
+})
+
 describe.sequential('/api/link/edit unsafe', () => {
   const unsafePayload = { ...testLinkPayload, url: 'https://example.com', slug: `unsafe-test-${crypto.randomUUID()}` }
 

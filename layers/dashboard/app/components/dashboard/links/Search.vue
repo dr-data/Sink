@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Link } from '@/types'
+import { Query, SearcherFactory } from '@m31coding/fuzzy-search'
 import { createReusableTemplate, useMagicKeys, useMediaQuery } from '@vueuse/core'
-import { useFuse } from '@vueuse/integrations/useFuse'
 
 defineOptions({
   inheritAttrs: false,
@@ -17,11 +17,14 @@ const isOpen = ref(false)
 const searchTerm = ref('')
 const links = ref<Link[]>([])
 
-const { results: filteredLinks } = useFuse(searchTerm, links, {
-  fuseOptions: {
-    keys: ['slug', 'url', 'comment'],
-  },
-  resultLimit: 20,
+const searcher = SearcherFactory.createDefaultSearcher<Link, string>()
+
+const filteredLinks = computed(() => {
+  if (!searchTerm.value.trim())
+    return []
+
+  const result = searcher.getMatches(new Query(searchTerm.value, 20))
+  return result.matches.map(m => ({ item: m.entity }))
 })
 
 const { Meta_K, Ctrl_K } = useMagicKeys({
@@ -59,6 +62,11 @@ function selectLink(link: Link | undefined) {
 async function getLinks() {
   try {
     links.value = await useAPI<Link[]>('/api/link/search')
+    searcher.indexEntities(
+      links.value,
+      e => e.slug,
+      e => [e.slug, e.url, e.comment ?? ''].filter(Boolean),
+    )
   }
   catch (error) {
     console.error(error)

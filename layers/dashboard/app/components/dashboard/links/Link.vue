@@ -68,27 +68,6 @@ function copyLink() {
               >
                 <ShieldAlert class="h-3 w-3" />
               </Badge>
-
-              <Button
-                v-if="copied"
-                variant="ghost"
-                size="icon"
-                class="ml-1 h-auto w-auto p-0"
-                aria-label="Link copied"
-                @click.prevent
-              >
-                <CopyCheck class="h-4 w-4 shrink-0" />
-              </Button>
-              <Button
-                v-else
-                variant="ghost"
-                size="icon"
-                class="ml-1 h-auto w-auto p-0"
-                aria-label="Copy link"
-                @click.prevent="copyLink"
-              >
-                <Copy class="h-4 w-4 shrink-0" />
-              </Button>
             </div>
 
             <TooltipProvider>
@@ -104,81 +83,6 @@ function copyLink() {
               </Tooltip>
             </TooltipProvider>
           </div>
-
-          <a
-            :href="link.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Open original link"
-            @click.stop
-          >
-            <LinkIcon class="h-5 w-5" />
-          </a>
-
-          <Popover>
-            <PopoverTrigger aria-label="Show QR code">
-              <QrCode
-                class="h-5 w-5"
-                @click.prevent
-              />
-            </PopoverTrigger>
-            <PopoverContent>
-              <DashboardLinksQRCode
-                :data="shortLink"
-                :image="linkIcon"
-              />
-            </PopoverContent>
-          </Popover>
-
-          <Popover v-model:open="editPopoverOpen">
-            <PopoverTrigger aria-label="More actions">
-              <SquareChevronDown
-                class="h-5 w-5"
-                @click.prevent
-              />
-            </PopoverTrigger>
-            <PopoverContent
-              class="w-auto p-0"
-              :hide-when-detached="false"
-            >
-              <DashboardLinksEditor
-                :link="link"
-              >
-                <div
-                  class="
-                    flex cursor-pointer items-center rounded-sm px-2 py-1.5
-                    text-sm outline-hidden select-none
-                    hover:bg-accent hover:text-accent-foreground
-                  "
-                >
-                  <SquarePen
-                    aria-hidden="true"
-                    class="mr-2 h-5 w-5"
-                  />
-                  {{ $t('common.edit') }}
-                </div>
-              </DashboardLinksEditor>
-
-              <Separator />
-
-              <DashboardLinksDelete
-                :link="link"
-              >
-                <div
-                  class="
-                    flex cursor-pointer items-center rounded-sm px-2 py-1.5
-                    text-sm outline-hidden select-none
-                    hover:bg-accent hover:text-accent-foreground
-                  "
-                >
-                  <Eraser
-                    aria-hidden="true"
-                    class="mr-2 h-5 w-5"
-                  /> {{ $t('common.delete') }}
-                </div>
-              </DashboardLinksDelete>
-            </PopoverContent>
-          </Popover>
         </div>
         <div class="mt-auto flex flex-col space-y-3">
           <div class="flex h-5 w-full space-x-2 text-sm">
@@ -216,7 +120,9 @@ function copyLink() {
             <span class="truncate">{{ link.url }}</span>
           </div>
           <div
-            v-if="countersMap" class="flex h-5 w-full space-x-2 text-sm"
+            v-if="countersMap" class="
+              flex h-5 w-full items-center space-x-2 text-sm
+            "
           >
             <template v-if="counters">
               <Badge variant="secondary">
@@ -235,6 +141,104 @@ function copyLink() {
             <template v-else>
               <Skeleton class="h-5 w-full rounded-full bg-secondary" />
             </template>
+
+            <div class="ml-auto flex shrink-0 items-center space-x-2">
+              <Button
+                v-if="copied"
+                variant="ghost"
+                size="icon"
+                class="h-auto w-auto p-0"
+                aria-label="Link copied"
+                @click.prevent
+              >
+                <CopyCheck class="h-4 w-4" />
+              </Button>
+              <Button
+                v-else
+                variant="ghost"
+                size="icon"
+                class="h-auto w-auto p-0"
+                aria-label="Copy link"
+                @click.prevent="copyLink"
+              >
+                <Copy class="h-4 w-4" />
+              </Button>
+
+              <a
+                :href="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open original link"
+                @click.stop
+              >
+                <LinkIcon class="h-4 w-4" />
+              </a>
+
+              <Popover>
+                <PopoverTrigger aria-label="Show QR code">
+                  <QrCode
+                    class="h-4 w-4"
+                    @click.prevent
+                  />
+                </PopoverTrigger>
+                <PopoverContent>
+                  <DashboardLinksQRCode
+                    :data="shortLink"
+                    :image="linkIcon"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover v-model:open="editPopoverOpen">
+                <PopoverTrigger aria-label="More actions">
+                  <SquareChevronDown
+                    class="h-4 w-4"
+                    @click.prevent
+                  />
+                </PopoverTrigger>
+                <PopoverContent
+                  class="w-auto p-0"
+                  :hide-when-detached="false"
+                >
+                  <DashboardLinksEditor
+                    :link="link"
+                  >
+                    <div
+                      class="
+                        flex cursor-pointer items-center rounded-sm px-2 py-1.5
+                        text-sm outline-hidden select-none
+                        hover:bg-accent hover:text-accent-foreground
+                      "
+                    >
+                      <SquarePen
+                        aria-hidden="true"
+                        class="mr-2 h-5 w-5"
+                      />
+                      {{ $t('common.edit') }}
+                    </div>
+                  </DashboardLinksEditor>
+
+                  <Separator />
+
+                  <DashboardLinksDelete
+                    :link="link"
+                  >
+                    <div
+                      class="
+                        flex cursor-pointer items-center rounded-sm px-2 py-1.5
+                        text-sm outline-hidden select-none
+                        hover:bg-accent hover:text-accent-foreground
+                      "
+                    >
+                      <Eraser
+                        aria-hidden="true"
+                        class="mr-2 h-5 w-5"
+                      /> {{ $t('common.delete') }}
+                    </div>
+                  </DashboardLinksDelete>
+                </PopoverContent>
+              </Popover>
+            </div>
           </div>
         </div>
       </NuxtLink>

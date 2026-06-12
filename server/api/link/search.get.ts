@@ -49,21 +49,16 @@ export default eventHandler(async (event) => {
               })
             }
             else {
-              // Forward compatible with links without metadata
-              const { metadata, value: link } = await KV.getWithMetadata(key.name, { type: 'json' }) as { metadata: LinkMetadata | null, value: LinkData | null }
+              // Forward compatible with links without metadata.
+              // NOTE: do NOT backfill metadata here — writing to KV on a read
+              // path causes write spikes. The offline `migrate-links` scheduled
+              // task (server/plugins/migrate-links.ts) handles backfill instead.
+              const { value: link } = await KV.getWithMetadata(key.name, { type: 'json' }) as { metadata: LinkMetadata | null, value: LinkData | null }
               if (link) {
                 list.push({
                   slug: key.name.replace('link:', ''),
                   url: link.url,
                   comment: link.comment,
-                })
-                await KV.put(key.name, JSON.stringify(link), {
-                  expiration: metadata?.expiration,
-                  metadata: {
-                    ...(metadata ?? {}),
-                    url: withoutQuery(link.url),
-                    comment: link.comment,
-                  },
                 })
               }
             }
