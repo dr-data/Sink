@@ -1,51 +1,52 @@
 <script setup lang="ts">
+import type { LinkSortBy } from '@/types'
 import { ArrowUpDown } from 'lucide-vue-next'
 
 const linksStore = useDashboardLinksStore()
+const sortOptions: LinkSortBy[] = ['newest', 'oldest', 'az', 'za']
+
+function onSortChange(value: unknown) {
+  if (value === 'newest' || value === 'oldest' || value === 'az' || value === 'za')
+    linksStore.setSortBy(value)
+}
 </script>
 
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="outline">
-        <TooltipProvider>
-          <Tooltip :delay-duration="100">
-            <TooltipTrigger class="flex items-center">
-              <ArrowUpDown
-                class="
-                  h-4 w-4
-                  sm:mr-2
-                "
-              />
-              <span
-                class="
-                  hidden
-                  sm:inline
-                "
-              >
-                {{ $t(`links.sort.${linksStore.sortBy}`) }}
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{{ $t('links.sort.tip') }}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+      <Button
+        variant="outline"
+        :title="$t('links.sort.tip')"
+      >
+        <ArrowUpDown
+          class="
+            h-4 w-4
+            sm:mr-2
+          "
+        />
+        <span
+          class="
+            hidden
+            sm:inline
+          "
+        >
+          {{ $t(`links.sort.${linksStore.sortBy}`) }}
+        </span>
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-      <DropdownMenuItem @click="linksStore.sortBy = 'newest'">
-        {{ $t('links.sort.newest') }}
-      </DropdownMenuItem>
-      <DropdownMenuItem @click="linksStore.sortBy = 'oldest'">
-        {{ $t('links.sort.oldest') }}
-      </DropdownMenuItem>
-      <DropdownMenuItem @click="linksStore.sortBy = 'az'">
-        {{ $t('links.sort.az') }}
-      </DropdownMenuItem>
-      <DropdownMenuItem @click="linksStore.sortBy = 'za'">
-        {{ $t('links.sort.za') }}
-      </DropdownMenuItem>
+      <DropdownMenuRadioGroup
+        :model-value="linksStore.sortBy"
+        @update:model-value="onSortChange"
+      >
+        <DropdownMenuRadioItem
+          v-for="option in sortOptions"
+          :key="option"
+          :value="option"
+        >
+          {{ $t(`links.sort.${option}`) }}
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
     </DropdownMenuContent>
   </DropdownMenu>
 </template>

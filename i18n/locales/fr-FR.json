@@ -286,7 +286,7 @@
       "oldest": "Les plus anciens",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
-      "tip": "Essai : uniquement pour les liens chargés"
+      "tip": "Trier tous les liens par date ou nom"
     },
     "update_failed": "Échec de la mise à jour du lien",
     "create_failed": "Échec de la création du lien",

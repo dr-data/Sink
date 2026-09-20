@@ -18,7 +18,5 @@
      - Return to **Settings** -> **Bindings** -> **Add** and select **Analytics engine**.
      - Bind the variable name `ANALYTICS` to the `sink` dataset.
 
-7. Add Compatibility flags
-   - Go to **Settings** -> **Runtime** -> **Compatibility flags** and set the following flags `nodejs_compat`.
-8. Redeploy the project.
-9. To update code, refer to the official GitHub documentation [Syncing a fork branch from the web UI](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork#syncing-a-fork-branch-from-the-web-ui 'GitHub: Syncing a fork').
+7. Compatibility flags are set in `wrangler.jsonc` (`nodejs_compat`). Redeploy after changing the file; you do not need to set this flag in the dashboard.
+8. To update code, refer to the official GitHub documentation [Syncing a fork branch from the web UI](https://docs.github.com/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork#syncing-a-fork-branch-from-the-web-ui 'GitHub: Syncing a fork').

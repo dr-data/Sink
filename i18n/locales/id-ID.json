@@ -286,7 +286,7 @@
       "oldest": "Terlama",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
-      "tip": "Hanya untuk data yang sudah dimuat"
+      "tip": "Urutkan semua tautan berdasarkan tanggal atau nama"
     },
     "update_failed": "Gagal memperbarui tautan",
     "create_failed": "Gagal membuat tautan",

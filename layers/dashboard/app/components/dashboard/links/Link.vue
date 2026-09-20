@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import type { CounterData, Link } from '@/types'
 import { useClipboard } from '@vueuse/core'
-import { CalendarPlus2, Copy, CopyCheck, Eraser, Flame, Hourglass, Link as LinkIcon, MousePointerClick, QrCode, ShieldAlert, SquareChevronDown, SquarePen, Users } from 'lucide-vue-next'
+import { CalendarPlus2, Copy, CopyCheck, Eraser, Flame, Hourglass, Link as LinkIcon, MousePointerClick, QrCode, ShieldAlert, SquarePen, Users } from 'lucide-vue-next'
 import { parseURL } from 'ufo'
 import { toast } from 'vue-sonner'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   link: Link
-}>()
+  navigable?: boolean
+}>(), {
+  navigable: true,
+})
 
 const { t, locale } = useI18n()
-const editPopoverOpen = ref(false)
 
 const countersMap = inject<Ref<Record<string, CounterData>> | undefined>('linksCountersMap', undefined)
 const counters = computed(() => countersMap?.value?.[props.link.id])
@@ -27,7 +29,7 @@ function getLinkHost(url: string): string | undefined {
 const shortLink = computed(() => `${origin}/${props.link.slug}`)
 const linkIcon = computed(() => `https://unavatar.webp.se/${getLinkHost(props.link.url)}?fallback=https://sink.cool/icon.png`)
 
-const { copy, copied } = useClipboard({ source: shortLink.value, copiedDuring: 400 })
+const { copy, copied } = useClipboard({ source: shortLink, copiedDuring: 400 })
 
 function copyLink() {
   copy(shortLink.value)
@@ -38,9 +40,10 @@ function copyLink() {
 <template>
   <Card class="h-full">
     <CardContent class="flex-1">
-      <NuxtLink
+      <component
+        :is="navigable ? 'NuxtLink' : 'div'"
         class="flex h-full flex-col space-y-3"
-        :to="`/dashboard/link?slug=${link.slug}`"
+        :to="navigable ? `/dashboard/link?slug=${link.slug}` : undefined"
       >
         <div class="flex items-center justify-center space-x-3">
           <Avatar>
@@ -119,27 +122,25 @@ function copyLink() {
             <Separator orientation="vertical" />
             <span class="truncate">{{ link.url }}</span>
           </div>
-          <div
-            v-if="countersMap" class="
-              flex h-5 w-full items-center space-x-2 text-sm
-            "
-          >
-            <template v-if="counters">
-              <Badge variant="secondary">
-                <MousePointerClick aria-hidden="true" class="h-3.5 w-3.5" />
-                {{ counters.visits }}
-              </Badge>
-              <Badge variant="secondary">
-                <Users aria-hidden="true" class="h-3.5 w-3.5" />
-                {{ counters.visitors }}
-              </Badge>
-              <Badge variant="secondary">
-                <Flame aria-hidden="true" class="h-3.5 w-3.5" />
-                {{ counters.referers }}
-              </Badge>
-            </template>
-            <template v-else>
-              <Skeleton class="h-5 w-full rounded-full bg-secondary" />
+          <div class="flex h-5 w-full items-center space-x-2 text-sm">
+            <template v-if="countersMap">
+              <template v-if="counters">
+                <Badge variant="secondary">
+                  <MousePointerClick aria-hidden="true" class="h-3.5 w-3.5" />
+                  {{ counters.visits }}
+                </Badge>
+                <Badge variant="secondary">
+                  <Users aria-hidden="true" class="h-3.5 w-3.5" />
+                  {{ counters.visitors }}
+                </Badge>
+                <Badge variant="secondary">
+                  <Flame aria-hidden="true" class="h-3.5 w-3.5" />
+                  {{ counters.referers }}
+                </Badge>
+              </template>
+              <template v-else>
+                <Skeleton class="h-5 w-full rounded-full bg-secondary" />
+              </template>
             </template>
 
             <div class="ml-auto flex shrink-0 items-center space-x-2">
@@ -149,7 +150,7 @@ function copyLink() {
                 size="icon"
                 class="h-auto w-auto p-0"
                 aria-label="Link copied"
-                @click.prevent
+                @click.prevent.stop
               >
                 <CopyCheck class="h-4 w-4" />
               </Button>
@@ -159,7 +160,7 @@ function copyLink() {
                 size="icon"
                 class="h-auto w-auto p-0"
                 aria-label="Copy link"
-                @click.prevent="copyLink"
+                @click.prevent.stop="copyLink"
               >
                 <Copy class="h-4 w-4" />
               </Button>
@@ -178,7 +179,7 @@ function copyLink() {
                 <PopoverTrigger aria-label="Show QR code">
                   <QrCode
                     class="h-4 w-4"
-                    @click.prevent
+                    @click.prevent.stop
                   />
                 </PopoverTrigger>
                 <PopoverContent>
@@ -189,59 +190,38 @@ function copyLink() {
                 </PopoverContent>
               </Popover>
 
-              <Popover v-model:open="editPopoverOpen">
-                <PopoverTrigger aria-label="More actions">
-                  <SquareChevronDown
-                    class="h-4 w-4"
-                    @click.prevent
-                  />
-                </PopoverTrigger>
-                <PopoverContent
-                  class="w-auto p-0"
-                  :hide-when-detached="false"
+              <DashboardLinksEditor
+                :key="`${link.id}-${link.updatedAt}-${link.slug}`"
+                :link="link"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="h-auto w-auto p-0"
+                  :aria-label="t('common.edit')"
+                  @click.prevent.stop
                 >
-                  <DashboardLinksEditor
-                    :link="link"
-                  >
-                    <div
-                      class="
-                        flex cursor-pointer items-center rounded-sm px-2 py-1.5
-                        text-sm outline-hidden select-none
-                        hover:bg-accent hover:text-accent-foreground
-                      "
-                    >
-                      <SquarePen
-                        aria-hidden="true"
-                        class="mr-2 h-5 w-5"
-                      />
-                      {{ $t('common.edit') }}
-                    </div>
-                  </DashboardLinksEditor>
+                  <SquarePen class="h-4 w-4" />
+                </Button>
+              </DashboardLinksEditor>
 
-                  <Separator />
-
-                  <DashboardLinksDelete
-                    :link="link"
-                  >
-                    <div
-                      class="
-                        flex cursor-pointer items-center rounded-sm px-2 py-1.5
-                        text-sm outline-hidden select-none
-                        hover:bg-accent hover:text-accent-foreground
-                      "
-                    >
-                      <Eraser
-                        aria-hidden="true"
-                        class="mr-2 h-5 w-5"
-                      /> {{ $t('common.delete') }}
-                    </div>
-                  </DashboardLinksDelete>
-                </PopoverContent>
-              </Popover>
+              <DashboardLinksDelete
+                :link="link"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="h-auto w-auto p-0"
+                  :aria-label="t('common.delete')"
+                  @click.prevent.stop
+                >
+                  <Eraser class="h-4 w-4" />
+                </Button>
+              </DashboardLinksDelete>
             </div>
           </div>
         </div>
-      </NuxtLink>
+      </component>
     </CardContent>
   </Card>
 </template>

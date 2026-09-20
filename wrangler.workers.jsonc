@@ -1,16 +1,29 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  // Pages Git deploys require this key. Without it, Cloudflare skips the file and
-  // publishes the Function without nodejs_compat, which fails on node:buffer.
   "name": "sink",
-  "pages_build_output_dir": "dist",
+  "main": ".output/server/index.mjs",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public",
+    "html_handling": "drop-trailing-slash"
+  },
   "compatibility_date": "2025-05-08",
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "keep_vars": true,
   "upload_source_maps": true,
+  "observability": {
+    "logs": {
+      "enabled": true
+    },
+    "traces": {
+      "enabled": true
+    }
+  },
   "ai": {
-    "binding": "AI"
+    "binding": "AI",
+    "remote": true
   },
   "analytics_engine_datasets": [
     {
@@ -31,5 +44,8 @@
       "preview_bucket_name": "shorlol",
       "bucket_name": "shorlol"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": ["0 0 * * *"] // Run backup task daily at 00:00 UTC
+  }
 }

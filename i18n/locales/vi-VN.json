@@ -286,7 +286,7 @@
       "oldest": "Cũ nhất trước",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
-      "tip": "Trải nghiệm: Chỉ áp dụng với các liên kết đã tải"
+      "tip": "Sắp xếp tất cả liên kết theo ngày hoặc tên"
     },
     "update_failed": "Cập nhật liên kết thất bại",
     "create_failed": "Tạo liên kết thất bại",

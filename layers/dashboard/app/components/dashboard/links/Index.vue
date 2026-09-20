@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import type { CounterData, Link, LinkListResponse, LinkUpdateType } from '@/types'
+import { sortLinks, sortRequiresFullList } from '#shared/utils/sort-links'
 import { useInfiniteScroll } from '@vueuse/core'
 import { Loader } from 'lucide-vue-next'
+
+const PAGE_LIMIT = 24
+const FULL_LIST_LIMIT = 1024
 
 const linksStore = useDashboardLinksStore()
 
 const links = ref<Link[]>([])
 const listComplete = ref(false)
 const listError = ref(false)
-const limit = 24
+const isLoadingAll = ref(false)
 let cursor = ''
+let inFlight: Promise<void> | null = null
 
 const countersMap = ref<Record<string, CounterData>>({})
 provide('linksCountersMap', countersMap)
@@ -51,53 +56,69 @@ onMounted(() => {
   scrollContainer.value = document.querySelector('.overflow-y-auto') as HTMLElement | null
 })
 
-const displayedLinks = computed(() => {
-  const sorted = [...links.value]
-  switch (linksStore.sortBy) {
-    case 'newest':
-      return sorted.sort((a, b) => b.createdAt - a.createdAt)
-    case 'oldest':
-      return sorted.sort((a, b) => a.createdAt - b.createdAt)
-    case 'az':
-      return sorted.sort((a, b) => a.slug.localeCompare(b.slug))
-    case 'za':
-      return sorted.sort((a, b) => b.slug.localeCompare(a.slug))
-    default:
-      return sorted
-  }
-})
+const displayedLinks = computed(() => sortLinks(links.value, linksStore.sortBy))
 
-async function getLinks() {
+async function getLinks(fetchLimit = PAGE_LIMIT) {
+  if (listComplete.value)
+    return
+  if (inFlight) {
+    await inFlight
+    return
+  }
+
+  inFlight = (async () => {
+    try {
+      const data = await useAPI<LinkListResponse>('/api/link/list', {
+        query: {
+          limit: fetchLimit,
+          cursor,
+        },
+      })
+      const newLinks = data.links.filter(Boolean)
+      links.value = links.value.concat(newLinks)
+      cursor = data.cursor
+      listComplete.value = data.list_complete
+      listError.value = false
+
+      const ids = newLinks.map(l => l.id).filter(id => !countersMap.value[id] && !pendingIds.has(id))
+      fetchCounters(ids)
+    }
+    catch (error) {
+      console.error(error)
+      listError.value = true
+    }
+    finally {
+      inFlight = null
+    }
+  })()
+
+  await inFlight
+}
+
+async function loadAllLinks() {
+  isLoadingAll.value = true
   try {
-    const data = await useAPI<LinkListResponse>('/api/link/list', {
-      query: {
-        limit,
-        cursor,
-      },
-    })
-    const newLinks = data.links.filter(Boolean)
-    links.value = links.value.concat(newLinks)
-    cursor = data.cursor
-    listComplete.value = data.list_complete
-    listError.value = false
-
-    const ids = newLinks.map(l => l.id).filter(id => !countersMap.value[id] && !pendingIds.has(id))
-    fetchCounters(ids)
+    while (!listComplete.value && !listError.value)
+      await getLinks(FULL_LIST_LIMIT)
   }
-  catch (error) {
-    console.error(error)
-    listError.value = true
+  finally {
+    isLoadingAll.value = false
   }
 }
 
+watch(() => linksStore.sortBy, (sortBy) => {
+  if (sortRequiresFullList(sortBy))
+    loadAllLinks()
+})
+
 const { isLoading } = useInfiniteScroll(
   scrollContainer as unknown as Ref<HTMLElement | null>,
-  getLinks,
+  () => getLinks(),
   {
     distance: 150,
     interval: 1000,
     canLoadMore: () => {
-      return !listError.value && !listComplete.value
+      return !listError.value && !listComplete.value && !isLoadingAll.value
     },
   },
 )
@@ -105,15 +126,17 @@ const { isLoading } = useInfiniteScroll(
 function updateLinkList(link: Link, type: LinkUpdateType) {
   if (type === 'edit') {
     const index = links.value.findIndex(l => l.id === link.id)
-    links.value[index] = link
+    if (index !== -1)
+      links.value[index] = link
   }
   else if (type === 'delete') {
     const index = links.value.findIndex(l => l.id === link.id)
-    links.value.splice(index, 1)
+    if (index !== -1)
+      links.value.splice(index, 1)
   }
   else {
     links.value.unshift(link)
-    linksStore.sortBy = 'newest'
+    linksStore.setSortBy('newest')
   }
 }
 
@@ -137,13 +160,13 @@ linksStore.onLinkUpdate(({ link, type }) => {
     />
   </section>
   <div
-    v-if="isLoading"
+    v-if="isLoading || isLoadingAll"
     class="flex items-center justify-center"
   >
     <Loader class="animate-spin" />
   </div>
   <div
-    v-if="!isLoading && listComplete"
+    v-if="!isLoading && !isLoadingAll && listComplete"
     class="flex items-center justify-center text-sm"
   >
     {{ $t('links.no_more') }}
@@ -153,7 +176,7 @@ linksStore.onLinkUpdate(({ link, type }) => {
     class="flex items-center justify-center text-sm"
   >
     {{ $t('links.load_failed') }}
-    <Button variant="link" @click="getLinks">
+    <Button variant="link" @click="getLinks()">
       {{ $t('common.try_again') }}
     </Button>
   </div>

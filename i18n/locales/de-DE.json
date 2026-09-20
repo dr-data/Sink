@@ -286,7 +286,7 @@
       "oldest": "Älteste zuerst",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
-      "tip": "Hinweis: Nur für geladene Links"
+      "tip": "Alle Links nach Datum oder Name sortieren"
     },
     "update_failed": "Link konnte nicht aktualisiert werden",
     "create_failed": "Link konnte nicht erstellt werden",
