@@ -286,7 +286,7 @@
       "oldest": "Oldest First",
       "az": "Slug A-Z",
       "za": "Slug Z-A",
-      "tip": "Experience: Only for loaded links"
+      "tip": "Sort all links by date or name"
     },
     "update_failed": "Failed to update link",
     "create_failed": "Failed to create link",

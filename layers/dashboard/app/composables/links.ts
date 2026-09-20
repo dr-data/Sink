@@ -1,4 +1,4 @@
-import type { Link, LinkUpdateType } from '@/types'
+import type { Link, LinkSortBy, LinkUpdateType } from '@/types'
 import { defineStore } from '#imports'
 import { createEventHook, tryOnScopeDispose } from '@vueuse/core'
 import { ref } from 'vue'
@@ -9,12 +9,16 @@ export interface LinkUpdateEvent {
 }
 
 export const useDashboardLinksStore = defineStore('dashboard-links', () => {
-  const sortBy = ref<'newest' | 'oldest' | 'az' | 'za'>('az')
+  const sortBy = ref<LinkSortBy>('az')
 
   const showLinkEditor = ref(false)
   const editingLink = ref<Record<string, unknown> | null>(null)
 
   const linkUpdateHook = createEventHook<LinkUpdateEvent>()
+
+  function setSortBy(value: LinkSortBy) {
+    sortBy.value = value
+  }
 
   function openLinkEditor(link?: Record<string, unknown>) {
     editingLink.value = link || null
@@ -38,6 +42,7 @@ export const useDashboardLinksStore = defineStore('dashboard-links', () => {
 
   return {
     sortBy,
+    setSortBy,
     showLinkEditor,
     editingLink,
     openLinkEditor,
